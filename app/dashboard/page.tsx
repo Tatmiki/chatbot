@@ -176,11 +176,11 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-between px-4 py-6">
       <div className="w-full max-w-4xl mx-auto">
         <div className="flex justify-between mb-4">
-          <h2 className="text-xl font-semibold">Chat com IA</h2>
+          <h2 className="text-xl font-semibold">ChatBot</h2>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={handleNewChat}>
               <RefreshCcw size={16} className="mr-1" />
-              Novo chat
+              Apagar conversa
             </Button>
             <Button variant="outline" size="sm" onClick={handleLogout}>
               Sair
