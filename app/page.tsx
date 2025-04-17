@@ -1,103 +1,124 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Eye, EyeOff, Mail } from 'lucide-react';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const router = useRouter();
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const handleAuth = () => {
+    const users = JSON.parse(localStorage.getItem('users') || '[]');
+
+    if (isRegistering) {
+      // Verifica se já existe
+      const exists = users.find((user: any) => user.email === email);
+      if (exists) {
+        setError('Usuário já existe');
+        return;
+      }
+
+      // Salva novo usuário
+      const newUsers = [...users, { email, password }];
+      localStorage.setItem('users', JSON.stringify(newUsers));
+      localStorage.setItem('auth', email);
+      router.push('/dashboard');
+    } else {
+      // Login
+      const validUser = users.find(
+        (user: any) => user.email === email && user.password === password
+      );
+      if (validUser) {
+        localStorage.setItem('auth', email);
+        router.push('/dashboard');
+      } else {
+        setError('Credenciais inválidas');
+      }
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 40 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md"
+      >
+        <h1 className="text-2xl font-bold mb-6 text-center">
+          {isRegistering ? 'Cadastrar' : 'Login'}
+        </h1>
+
+        <div className="space-y-4">
+          <div>
+            <Label htmlFor="email">Email</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+              <Input
+                id="email"
+                type="email"
+                placeholder="seu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="password">Senha</Label>
+            <div className="relative">
+              {showPassword ? (
+                <EyeOff
+                  className="absolute right-3 top-2.5 h-5 w-5 text-gray-400 cursor-pointer"
+                  onClick={() => setShowPassword(false)}
+                />
+              ) : (
+                <Eye
+                  className="absolute right-3 top-2.5 h-5 w-5 text-gray-400 cursor-pointer"
+                  onClick={() => setShowPassword(true)}
+                />
+              )}
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="•••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pr-10"
+              />
+            </div>
+          </div>
+
+          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+
+          <Button className="w-full mt-2" onClick={handleAuth}>
+            {isRegistering ? 'Cadastrar e Entrar' : 'Entrar'}
+          </Button>
+
+          <p className="text-center text-sm mt-4">
+            {isRegistering ? 'Já tem uma conta?' : 'Ainda não tem conta?'}{' '}
+            <span
+              className="text-blue-500 cursor-pointer underline"
+              onClick={() => {
+                setIsRegistering(!isRegistering);
+                setError('');
+              }}
+            >
+              {isRegistering ? 'Fazer login' : 'Cadastrar-se'}
+            </span>
+          </p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </motion.div>
     </div>
   );
 }
