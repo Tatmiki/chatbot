@@ -16,29 +16,53 @@ export default function Home() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
 
-  const handleAuth = () => {
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
+  const handleAuth = async () => {
+    setError('');
 
+    // Verifica se está registrando ou fazendo login
     if (isRegistering) {
-      // Verifica se já existe
-      const exists = users.find((user: any) => user.email === email);
-      if (exists) {
-        setError('Usuário já existe');
-        return;
-      }
+      // Registro
+      const response = await fetch('http://localhost:8000/users/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }), // Envia o e-mail e a senha
+      });
 
-      // Salva novo usuário
-      const newUsers = [...users, { email, password }];
-      localStorage.setItem('users', JSON.stringify(newUsers));
-      localStorage.setItem('auth', email);
-      router.push('/dashboard');
+      if (response.ok) {
+        // Agora faz o login automaticamente
+        const loginResponse = await fetch('http://localhost:8000/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+    
+        if (loginResponse.ok) {
+          const data = await loginResponse.json();
+          localStorage.setItem('auth', data.email); // salva o email no localStorage
+          router.push('/dashboard');
+        } else {
+          setError('Erro ao fazer login após cadastro');
+        }
+      } else {
+        setError('Erro ao cadastrar usuário');
+      }
     } else {
       // Login
-      const validUser = users.find(
-        (user: any) => user.email === email && user.password === password
-      );
-      if (validUser) {
-        localStorage.setItem('auth', email);
+      const response = await fetch('http://localhost:8000/login', { // Endpoint para login
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }), // Envia e-mail e senha para autenticação
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        localStorage.setItem('auth', data.email); // Armazena o e-mail no localStorage
         router.push('/dashboard');
       } else {
         setError('Credenciais inválidas');

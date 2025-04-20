@@ -7,11 +7,12 @@ services:
       - '8000:8000'
     depends_on:
       - ollama
+      - db
 
   frontend:
-    build: ./ # <-- ajuste aqui, se você tiver a pasta separada
+    build: ./
     ports:
-      - '3000:3000' # <-- expõe corretamente a porta do Next.js
+      - '3000:3000'
     environment:
       - NEXT_PUBLIC_API_URL=http://backend:8000
 
@@ -23,5 +24,16 @@ services:
       - ollama:/root/.ollama
     restart: unless-stopped
 
+  db:
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: chatbot
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
 volumes:
   ollama:
+  pgdata:
