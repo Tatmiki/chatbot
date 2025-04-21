@@ -19,25 +19,11 @@ if (typeof window !== 'undefined' && !document.getElementById('bounceDot')) {
   document.head.appendChild(style);
 }
 
-function useClickOutside(callback: () => void) {
-  useEffect(() => {
-    const handleClick = (e: MouseEvent) => {
-      if (!(e.target as HTMLElement).closest('textarea')) {
-        callback();
-      }
-    };
-    document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
-  }, [callback]);
-}
-
 type Message = {
   id: string;
   sender: 'user' | 'bot';
   text: string;
   parentId?: string;
-  previousBotReplies?: string[];
-  showPrevious?: boolean;
   isEditing?: boolean;
   dbId?: number;
   originalText?: string;
@@ -188,6 +174,8 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-between px-4 py-6">
       <div className="w-full max-w-4xl mx-auto">
+        
+        {/* Header */}
         <div className="flex justify-between mb-4">
           <h2 className="text-xl font-semibold">ChatBot</h2>
           <div className="flex gap-2">
@@ -199,13 +187,22 @@ export default function Dashboard() {
             </Button>
           </div>
         </div>
-
+  
+        {/* Chat messages */}
         <div className="bg-white rounded-xl shadow p-4 h-[75vh] overflow-y-auto space-y-4 w-full">
           {messages.map((msg) => (
             <div key={msg.id} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
               <div
-                className={`rounded-xl px-4 py-2 ${msg.sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'}`}
-                style={{ maxWidth: '80%', minWidth: '80px', wordBreak: 'break-word', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}
+                className={`rounded-xl px-4 py-2 ${
+                  msg.sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-black'
+                }`}
+                style={{
+                  maxWidth: '80%',
+                  minWidth: '80px',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'anywhere',
+                  whiteSpace: 'pre-wrap',
+                }}
               >
                 {msg.isEditing ? (
                   <div className="flex flex-col space-y-2">
@@ -215,7 +212,9 @@ export default function Dashboard() {
                       value={msg.text}
                       onChange={(e) =>
                         setMessages((prev) =>
-                          prev.map((m) => (m.id === msg.id ? { ...m, text: e.target.value } : m))
+                          prev.map((m) =>
+                            m.id === msg.id ? { ...m, text: e.target.value } : m
+                          )
                         )
                       }
                     />
@@ -230,12 +229,14 @@ export default function Dashboard() {
                         onClick={() =>
                           setMessages((prev) =>
                             prev.map((m) =>
-                              m.id === msg.id ? { ...m, isEditing: false, text: m.originalText || m.text } : m
+                              m.id === msg.id
+                                ? { ...m, isEditing: false, text: m.originalText || m.text }
+                                : m
                             )
                           )
                         }
                       >
-                        <X size={16} />
+                        <X size={16} className="mr-1" />
                         Cancelar
                       </Button>
                     </div>
@@ -244,32 +245,25 @@ export default function Dashboard() {
                   <div className="flex flex-col gap-1">
                     <div className="flex items-start gap-2">
                       {msg.sender === 'bot' && msg.text === 'typing' ? (
-                        <span style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        <span className="flex gap-[6px] items-center">
                           {[0, 0.2, 0.4].map((delay, i) => (
                             <span
                               key={i}
-                              style={{
-                                width: '8px',
-                                height: '8px',
-                                backgroundColor: '#4b5563',
-                                borderRadius: '50%',
-                                animation: 'bounceDot 1.4s infinite',
-                                animationDelay: `${delay}s`
-                              }}
+                              className="w-[8px] h-[8px] bg-gray-600 rounded-full animate-bounce"
+                              style={{ animationDelay: `${delay}s` }}
                             />
                           ))}
                         </span>
                       ) : (
-                        <span>
-                          {msg.showPrevious && msg.previousBotReplies?.length
-                            ? msg.previousBotReplies[msg.previousBotReplies.length - 1]
-                            : msg.text}
-                        </span>
+                        <span>{msg.text}</span>
                       )}
+  
                       {msg.sender === 'user' && (
                         <Pencil
                           size={16}
-                          className={`cursor-pointer opacity-70 hover:opacity-100 ${loading ? 'pointer-events-none opacity-30' : ''}`}
+                          className={`cursor-pointer opacity-70 hover:opacity-100 ${
+                            loading ? 'pointer-events-none opacity-30' : ''
+                          }`}
                           onClick={() => handleEdit(msg.id)}
                         />
                       )}
@@ -280,7 +274,8 @@ export default function Dashboard() {
             </div>
           ))}
         </div>
-
+  
+        {/* Input field */}
         <div className="mt-4 flex items-center gap-2">
           <Input
             placeholder="Digite sua mensagem..."
@@ -297,4 +292,4 @@ export default function Dashboard() {
       </div>
     </div>
   );
-}
+};  

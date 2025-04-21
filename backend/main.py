@@ -63,7 +63,6 @@ def login(user: schemas.UserLogin, db: Session = Depends(get_db)):
 
     return {"id": db_user.id, "email": db_user.email}
 
-
 # ARMAZENA UMA MENSAGEM NO BANCO DE UM USUÁRIO
 @app.post("/users/{user_id}/messages", response_model=schemas.MessageOut)
 def post_message(user_id: int, msg: schemas.MessageCreate, db: Session = Depends(get_db)):
